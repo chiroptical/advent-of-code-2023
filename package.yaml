@@ -1,0 +1,44 @@
+name:    adventOfCode2023
+version: "0.0.1"
+
+dependencies:
+- base >= 4.7 && < 5
+- bytestring
+- file-embed
+- megaparsec
+- parser-combinators
+- text
+
+default-extensions:
+- DeriveGeneric
+- ImportQualifiedPost
+- LambdaCase
+- OverloadedStrings
+- RecordWildCards
+- TypeApplications
+
+# The library contains all of our application code. The executable
+# defined below is just a thin wrapper.
+library:
+  source-dirs: src
+
+# Runnable executable for our application
+executables:
+  adventOfCode2023:
+    main: Main.hs
+    source-dirs: app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - adventOfCode2023
+
+# Test suite
+tests:
+  adventOfCode2023-test:
+    main: Spec.hs
+    source-dirs: test
+    dependencies:
+    - adventOfCode2023
+    - hspec

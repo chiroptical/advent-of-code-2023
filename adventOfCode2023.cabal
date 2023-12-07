@@ -1,0 +1,83 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.35.2.
+--
+-- see: https://github.com/sol/hpack
+
+name:           adventOfCode2023
+version:        0.0.1
+build-type:     Simple
+
+library
+  exposed-modules:
+      DayOne
+      Parsing
+  other-modules:
+      Paths_adventOfCode2023
+  hs-source-dirs:
+      src
+  default-extensions:
+      DeriveGeneric
+      ImportQualifiedPost
+      LambdaCase
+      OverloadedStrings
+      RecordWildCards
+      TypeApplications
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , file-embed
+    , megaparsec
+    , parser-combinators
+    , text
+  default-language: Haskell2010
+
+executable adventOfCode2023
+  main-is: Main.hs
+  other-modules:
+      Paths_adventOfCode2023
+  hs-source-dirs:
+      app
+  default-extensions:
+      DeriveGeneric
+      ImportQualifiedPost
+      LambdaCase
+      OverloadedStrings
+      RecordWildCards
+      TypeApplications
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      adventOfCode2023
+    , base >=4.7 && <5
+    , bytestring
+    , file-embed
+    , megaparsec
+    , parser-combinators
+    , text
+  default-language: Haskell2010
+
+test-suite adventOfCode2023-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      DayOneSpec
+      Paths_adventOfCode2023
+  hs-source-dirs:
+      test
+  default-extensions:
+      DeriveGeneric
+      ImportQualifiedPost
+      LambdaCase
+      OverloadedStrings
+      RecordWildCards
+      TypeApplications
+  build-depends:
+      adventOfCode2023
+    , base >=4.7 && <5
+    , bytestring
+    , file-embed
+    , hspec
+    , megaparsec
+    , parser-combinators
+    , text
+  default-language: Haskell2010
