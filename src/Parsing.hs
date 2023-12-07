@@ -15,10 +15,22 @@ chunkUnsnoc input =
     Just (begin, end) -> chunk begin <* lookAhead (single end)
 
 writtenDigits :: Parser [Integer]
-writtenDigits = many writtenDigit
+writtenDigits = many (overlappingWrittenDigit <|> writtenDigit)
 
 writtenDigit :: Parser Integer
 writtenDigit =
+  (chunk "one" $> 1)
+    <|> (chunk "two" $> 2)
+    <|> (chunk "three" $> 3)
+    <|> (chunk "four" $> 4)
+    <|> (chunk "five" $> 5)
+    <|> (chunk "six" $> 6)
+    <|> (chunk "seven" $> 7)
+    <|> (chunk "eight" $> 8)
+    <|> (chunk "nine" $> 9)
+
+overlappingWrittenDigit :: Parser Integer
+overlappingWrittenDigit =
   (chunkUnsnoc "one" $> 1)
     <|> (chunkUnsnoc "two" $> 2)
     <|> (chunkUnsnoc "three" $> 3)

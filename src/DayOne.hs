@@ -17,7 +17,7 @@ dayOneTest :: Text
 dayOneTest = Encoding.decodeUtf8 $(embedFile "./inputs/day1.test.txt")
 
 digit :: Parsing.Parser Integer
-digit = Parsing.writtenDigit <|> Parsing.digit
+digit = Parsing.overlappingWrittenDigit <|> Parsing.writtenDigit <|> Parsing.digit
 
 line :: Parsing.Parser [Integer]
 line = join <$> sepEndBy (many digit) (some letterChar)
