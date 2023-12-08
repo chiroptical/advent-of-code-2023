@@ -27,7 +27,7 @@ dayOne = Encoding.decodeUtf8 $(embedFile "./inputs/day1.txt")
 
 line :: Parsing.Parser [Integer]
 line = do
-  first <- skipManyTill Parsing.invalidNumberInputs Parsing.digit
+  first <- skipManyTill lowerChar Parsing.digit
   rest <- sepEndBy Parsing.digits (some lowerChar)
   pure $ first : join rest
 
