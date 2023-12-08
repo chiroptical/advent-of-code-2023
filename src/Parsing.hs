@@ -35,13 +35,13 @@ writtenNumber input output =
       overlapKind <- lookAhead $ try overlapping <|> try adjacent <|> try noOverlap
       case overlapKind of
         Overlapping ->
-          pure $ trace "overlapping" output
+          pure output
         Adjacent -> do
           endChar
-          pure $ trace "overlapping" output
+          pure output
         NoOverlap -> do
           endChar
-          pure $ trace "overlapping" output
+          pure output
 
 writtenDigit :: Parser Integer
 writtenDigit =

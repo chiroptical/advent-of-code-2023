@@ -40,5 +40,5 @@ spec = do
     it "can handle six in between many characters" $ do
       parse line "..." "pqrstsixteen" `shouldBe` Right [6]
 
-    it "can handle six in between many characters" $ do
+    it "can handle six in between many characters with leading" $ do
       parse line "..." "7pqrstsixteen" `shouldBe` Right [7, 6]
