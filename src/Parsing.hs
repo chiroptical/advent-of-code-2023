@@ -11,8 +11,8 @@ import Text.Megaparsec
 
 type Parser = Parsec Void Text
 
-writtenNumbers :: Parser Text
-writtenNumbers = "one" <|> "two" <|> "three" <|> "four" <|> "five" <|> "six" <|> "seven" <|> "eight" <|> "nine"
+invalidNumberChars :: Parser Char
+invalidNumberChars = noneOf ("otfsen123456789" :: String)
 
 -- eightwo - overlapping, don't consume end character ('t')
 -- eighttwo - adjacent, consume end character
@@ -70,8 +70,8 @@ overlappableWrittenDigit =
 overlappableWrittenDigits :: Parser [Integer]
 overlappableWrittenDigits = many overlappableWrittenDigit
 
-digit :: Parser Integer
-digit =
+nonWrittenDigit :: Parser Integer
+nonWrittenDigit =
   (chunk "1" $> 1)
     <|> (chunk "2" $> 2)
     <|> (chunk "3" $> 3)
@@ -82,5 +82,8 @@ digit =
     <|> (chunk "8" $> 8)
     <|> (chunk "9" $> 9)
 
+digit :: Parser Integer
+digit = overlappableWrittenDigit <|> nonWrittenDigit
+
 digits :: Parser [Integer]
-digits = many (overlappableWrittenDigit <|> digit)
+digits = many digit

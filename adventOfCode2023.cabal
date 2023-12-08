@@ -12,6 +12,7 @@ library
   exposed-modules:
       DayOne
       Parsing
+      Safe
   other-modules:
       Paths_adventOfCode2023
   hs-source-dirs:
