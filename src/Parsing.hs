@@ -1,21 +1,47 @@
 module Parsing where
 
+import Control.Monad (join)
 import Data.Functor
+import Data.List (singleton)
 import Data.Text (Text)
 import Data.Text qualified as Text
 import Data.Void (Void)
+import Debug.Trace (trace)
 import Text.Megaparsec
 
 type Parser = Parsec Void Text
 
-chunkUnsnoc :: Text -> Parser Text
-chunkUnsnoc input =
-  case Text.unsnoc input of
-    Nothing -> fail "chunkUnsnoc: empty input"
-    Just (begin, end) -> chunk begin <* lookAhead (single end)
+writtenNumbers :: Parser Text
+writtenNumbers = "one" <|> "two" <|> "three" <|> "four" <|> "five" <|> "six" <|> "seven" <|> "eight" <|> "nine"
 
-writtenDigits :: Parser [Integer]
-writtenDigits = many (overlappingWrittenDigit <|> writtenDigit)
+-- eightwo - overlapping, don't consume end character ('t')
+-- eighttwo - adjacent, consume end character
+-- eight2 -- no overlap, consume end character
+data OverlapKind
+  = Overlapping
+  | Adjacent
+  | NoOverlap
+
+writtenNumber :: Text -> Integer -> Parser Integer
+writtenNumber input output =
+  case Text.unsnoc input of
+    Nothing -> fail "empty input"
+    Just (begin, end) -> do
+      chunk begin
+      let endChar = chunk (Text.singleton end)
+          overlapping = Overlapping <$ writtenDigit
+          adjacent = Adjacent <$ (endChar <* writtenDigit)
+          noOverlap = NoOverlap <$ endChar
+      overlapKind <- lookAhead $ try overlapping <|> try adjacent <|> try noOverlap
+      case overlapKind of
+        Overlapping ->
+          pure output
+        Adjacent -> do
+          endChar
+          pure output
+        NoOverlap -> do
+          endChar
+          pure output
 
 writtenDigit :: Parser Integer
 writtenDigit =
@@ -29,17 +55,20 @@ writtenDigit =
     <|> (chunk "eight" $> 8)
     <|> (chunk "nine" $> 9)
 
-overlappingWrittenDigit :: Parser Integer
-overlappingWrittenDigit =
-  (chunkUnsnoc "one" $> 1)
-    <|> (chunkUnsnoc "two" $> 2)
-    <|> (chunkUnsnoc "three" $> 3)
-    <|> (chunkUnsnoc "four" $> 4)
-    <|> (chunkUnsnoc "five" $> 5)
-    <|> (chunkUnsnoc "six" $> 6)
-    <|> (chunkUnsnoc "seven" $> 7)
-    <|> (chunkUnsnoc "eight" $> 8)
-    <|> (chunkUnsnoc "nine" $> 9)
+overlappableWrittenDigit :: Parser Integer
+overlappableWrittenDigit =
+  writtenNumber "one" 1
+    <|> writtenNumber "two" 2
+    <|> writtenNumber "three" 3
+    <|> writtenNumber "four" 4
+    <|> writtenNumber "five" 5
+    <|> writtenNumber "six" 6
+    <|> writtenNumber "seven" 7
+    <|> writtenNumber "eight" 8
+    <|> writtenNumber "nine" 9
+
+overlappableWrittenDigits :: Parser [Integer]
+overlappableWrittenDigits = many overlappableWrittenDigit
 
 digit :: Parser Integer
 digit =
@@ -52,3 +81,6 @@ digit =
     <|> (chunk "7" $> 7)
     <|> (chunk "8" $> 8)
     <|> (chunk "9" $> 9)
+
+digits :: Parser [Integer]
+digits = many (overlappableWrittenDigit <|> digit)
