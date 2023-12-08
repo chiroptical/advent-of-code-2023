@@ -13,7 +13,7 @@ import Data.Text.Encoding qualified as Encoding
 import Debug.Trace (trace)
 import Parsing qualified
 import Safe
-import Text.Megaparsec (anySingle, parse, try)
+import Text.Megaparsec (anySingle, parse)
 import Text.Megaparsec.Char
 
 dayOneTest :: Text
@@ -25,11 +25,11 @@ dayOneTestTwo = Encoding.decodeUtf8 $(embedFile "./inputs/day1.test2.txt")
 dayOne :: Text
 dayOne = Encoding.decodeUtf8 $(embedFile "./inputs/day1.txt")
 
+block :: Parsing.Parser Integer
+block = skipManyTill lowerChar Parsing.digit
+
 line :: Parsing.Parser [Integer]
-line = do
-  first <- skipManyTill lowerChar Parsing.digit
-  rest <- sepEndBy Parsing.digits (some lowerChar)
-  pure $ first : join rest
+line = some block <* many lowerChar
 
 solveTwo :: Text -> Integer
 solveTwo input =

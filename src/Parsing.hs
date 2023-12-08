@@ -35,13 +35,13 @@ writtenNumber input output =
       overlapKind <- lookAhead $ try overlapping <|> try adjacent <|> try noOverlap
       case overlapKind of
         Overlapping ->
-          pure output
+          pure $ trace "overlapping" output
         Adjacent -> do
           endChar
-          pure output
+          pure $ trace "overlapping" output
         NoOverlap -> do
           endChar
-          pure output
+          pure $ trace "overlapping" output
 
 writtenDigit :: Parser Integer
 writtenDigit =
@@ -68,7 +68,7 @@ overlappableWrittenDigit =
     <|> writtenNumber "nine" 9
 
 overlappableWrittenDigits :: Parser [Integer]
-overlappableWrittenDigits = many overlappableWrittenDigit
+overlappableWrittenDigits = some overlappableWrittenDigit
 
 nonWrittenDigit :: Parser Integer
 nonWrittenDigit =
@@ -86,4 +86,4 @@ digit :: Parser Integer
 digit = overlappableWrittenDigit <|> nonWrittenDigit
 
 digits :: Parser [Integer]
-digits = many digit
+digits = some digit
