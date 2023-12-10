@@ -4,6 +4,7 @@ version: "0.0.1"
 dependencies:
 - base >= 4.7 && < 5
 - bytestring
+- containers
 - file-embed
 - megaparsec
 - parser-combinators
@@ -11,6 +12,7 @@ dependencies:
 
 default-extensions:
 - DeriveGeneric
+- DerivingStrategies
 - ImportQualifiedPost
 - LambdaCase
 - OverloadedStrings

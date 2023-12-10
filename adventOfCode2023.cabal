@@ -11,6 +11,7 @@ build-type:     Simple
 library
   exposed-modules:
       DayOne
+      DayTwo
       Parsing
       Safe
   other-modules:
@@ -19,6 +20,7 @@ library
       src
   default-extensions:
       DeriveGeneric
+      DerivingStrategies
       ImportQualifiedPost
       LambdaCase
       OverloadedStrings
@@ -27,6 +29,7 @@ library
   build-depends:
       base >=4.7 && <5
     , bytestring
+    , containers
     , file-embed
     , megaparsec
     , parser-combinators
@@ -41,6 +44,7 @@ executable adventOfCode2023
       app
   default-extensions:
       DeriveGeneric
+      DerivingStrategies
       ImportQualifiedPost
       LambdaCase
       OverloadedStrings
@@ -51,6 +55,7 @@ executable adventOfCode2023
       adventOfCode2023
     , base >=4.7 && <5
     , bytestring
+    , containers
     , file-embed
     , megaparsec
     , parser-combinators
@@ -67,6 +72,7 @@ test-suite adventOfCode2023-test
       test
   default-extensions:
       DeriveGeneric
+      DerivingStrategies
       ImportQualifiedPost
       LambdaCase
       OverloadedStrings
@@ -76,6 +82,7 @@ test-suite adventOfCode2023-test
       adventOfCode2023
     , base >=4.7 && <5
     , bytestring
+    , containers
     , file-embed
     , hspec
     , megaparsec

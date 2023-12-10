@@ -4,16 +4,13 @@ module DayOne where
 
 import Control.Applicative
 import Control.Applicative.Combinators
-import Control.Monad (join)
-import Data.ByteString (ByteString)
 import Data.FileEmbed (embedFile)
 import Data.Foldable (foldl')
 import Data.Text (Text)
 import Data.Text.Encoding qualified as Encoding
-import Debug.Trace (trace)
 import Parsing qualified
 import Safe
-import Text.Megaparsec (anySingle, parse, try)
+import Text.Megaparsec (parse, try)
 import Text.Megaparsec.Char
 
 dayOneTest :: Text
@@ -59,10 +56,10 @@ solveTwo = solve $ line unitTwo
 
 main :: IO ()
 main = do
-  print "Part 1"
+  print ("Part 1" :: Text)
   print $ solveOne dayOneTest
   print $ solveOne dayOne
 
-  print "Part 2"
+  print ("Part 2" :: Text)
   print $ solveTwo dayOneTestTwo
   print $ solveTwo dayOne

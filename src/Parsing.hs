@@ -1,12 +1,9 @@
 module Parsing where
 
-import Control.Monad (join)
 import Data.Functor
-import Data.List (singleton)
 import Data.Text (Text)
 import Data.Text qualified as Text
 import Data.Void (Void)
-import Debug.Trace (trace)
 import Text.Megaparsec
 
 type Parser = Parsec Void Text
@@ -24,7 +21,7 @@ writtenNumber input output =
   case Text.unsnoc input of
     Nothing -> fail "empty input"
     Just (begin, end) -> do
-      chunk begin
+      _ <- chunk begin
       let endChar = chunk (Text.singleton end)
           overlapping = Overlapping <$ writtenDigit
           adjacent = Adjacent <$ (endChar <* writtenDigit)
@@ -34,10 +31,10 @@ writtenNumber input output =
         Overlapping ->
           pure output
         Adjacent -> do
-          endChar
+          _ <- endChar
           pure output
         NoOverlap -> do
-          endChar
+          _ <- endChar
           pure output
 
 writtenDigit :: Parser Integer
