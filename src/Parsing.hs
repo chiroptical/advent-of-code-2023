@@ -11,9 +11,6 @@ import Text.Megaparsec
 
 type Parser = Parsec Void Text
 
-invalidNumberChars :: Parser Char
-invalidNumberChars = noneOf ("otfsen123456789" :: String)
-
 -- eightwo - overlapping, don't consume end character ('t')
 -- eighttwo - adjacent, consume end character
 -- eight2 -- no overlap, consume end character

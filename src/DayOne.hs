@@ -25,19 +25,22 @@ dayOneTestTwo = Encoding.decodeUtf8 $(embedFile "./inputs/day1.test2.txt")
 dayOne :: Text
 dayOne = Encoding.decodeUtf8 $(embedFile "./inputs/day1.txt")
 
+unitOne :: Parsing.Parser Integer
+unitOne = try $ skipManyTill lowerChar Parsing.nonWrittenDigit
+
 {- | 'try' is needed here because we need to backtrack in the case of
 "pqrstsixteen". The parser tries to read "teen" followed by a digit, but one
 isn't present.
 -}
-block :: Parsing.Parser Integer
-block = try $ skipManyTill lowerChar Parsing.digit
+unitTwo :: Parsing.Parser Integer
+unitTwo = try $ skipManyTill lowerChar Parsing.digit
 
-line :: Parsing.Parser [Integer]
-line = some block <* many lowerChar
+line :: Parsing.Parser Integer -> Parsing.Parser [Integer]
+line parser = some parser <* many lowerChar
 
-solveTwo :: Text -> Integer
-solveTwo input =
-  case parse (sepEndBy line newline) "..." input of
+solve :: Parsing.Parser [Integer] -> Text -> Integer
+solve parser input =
+  case parse (sepEndBy parser newline) "..." input of
     Left _ -> error "unable to parse input"
     Right parsed ->
       let combine acc = \case
@@ -48,8 +51,18 @@ solveTwo input =
                 _ -> error "this shouldn't happen"
        in foldl' combine 0 parsed
 
+solveOne :: Text -> Integer
+solveOne = solve $ line unitOne
+
+solveTwo :: Text -> Integer
+solveTwo = solve $ line unitTwo
+
 main :: IO ()
 main = do
-  print $ solveTwo dayOneTest
+  print "Part 1"
+  print $ solveOne dayOneTest
+  print $ solveOne dayOne
+
+  print "Part 2"
   print $ solveTwo dayOneTestTwo
   print $ solveTwo dayOne
