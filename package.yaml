@@ -9,6 +9,7 @@ dependencies:
 - megaparsec
 - parser-combinators
 - text
+- transformers
 
 default-extensions:
 - DeriveGeneric
