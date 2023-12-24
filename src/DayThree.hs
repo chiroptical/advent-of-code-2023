@@ -61,6 +61,9 @@ toUnsizedSparseMatrix matrix =
       unsizedSparseMatrix = fromZipped $ fmap (zip [0 ..]) <$> zip [0 ..] matrix
    in (toInteger dimension, unsizedSparseMatrix)
 
+{- | TODO: this could be simplified using 'permutations'. You would create all
+the permutations and then skip the one which is (x, y).
+-}
 searchOne :: (a -> Bool) -> Integer -> Integer -> UnsizedSparseMatrix a -> Bool
 searchOne f x y mat =
   let check = maybe False f
@@ -142,6 +145,7 @@ searchRow dimension row matrix = do
           WithSymbol -> put (emptyCurrentNumber, numbers <^> toNumber currentNumber)
   snd <$> get
 
+-- | This is 'snoc'
 (<^>) :: [a] -> a -> [a]
 xs <^> x = xs <> [x]
 
@@ -163,6 +167,20 @@ partOne input =
             acc <> evalState (searchRow dimension row unsizedSparseMatrix) (emptyCurrentNumber, [])
           numbers = foldl' runSearch [] [0 .. dimension - 1]
        in foldl' (+) 0 numbers
+
+{- | To solve this, we need to extend 'NumberOrSymbol' with 'Gear Integer'
+where each 'Gear' is the symbol '*' with a monotonically increasing number.
+
+Instead of collecting all the numbers, we need to collect numbers next to
+'Gear's and retain which 'Gear' they were connected to. Then, we collect
+numbers which are attached to exactly 2 gears and multiply the numbers
+together. Finally, we sum all of the gear ratios
+-}
+partTwo :: Text -> [[NumberOrSymbol]]
+partTwo input =
+  case parse (sepEndBy1 line newline) "..." input of
+    Left _ -> error "unable to parse input"
+    Right parsed -> parsed
 
 main :: IO ()
 main = do
