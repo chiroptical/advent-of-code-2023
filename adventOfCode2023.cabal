@@ -11,9 +11,11 @@ build-type:     Simple
 library
   exposed-modules:
       DayOne
+      DayThree
       DayTwo
       Parsing
       Safe
+      UnsizedSparseMatrix
   other-modules:
       Paths_adventOfCode2023
   hs-source-dirs:
@@ -69,6 +71,7 @@ test-suite adventOfCode2023-test
   main-is: Spec.hs
   other-modules:
       DayOneSpec
+      DayThreeSpec
       Paths_adventOfCode2023
   hs-source-dirs:
       test

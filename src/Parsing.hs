@@ -66,7 +66,8 @@ overlappableWrittenDigits = some overlappableWrittenDigit
 
 nonWrittenDigit :: Parser Integer
 nonWrittenDigit =
-  (chunk "1" $> 1)
+  (chunk "0" $> 0)
+    <|> (chunk "1" $> 1)
     <|> (chunk "2" $> 2)
     <|> (chunk "3" $> 3)
     <|> (chunk "4" $> 4)
