@@ -15,7 +15,7 @@ library
       DayTwo
       Parsing
       Safe
-      UnsizedSparseMatrix
+      SizedSparseMatrix
   other-modules:
       Paths_adventOfCode2023
   hs-source-dirs:

@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedRecordDot #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 module DayThree where
@@ -8,10 +9,10 @@ import Data.Foldable
 import Data.Text (Text)
 import Data.Text.Encoding qualified as Encoding
 import Parsing
+import SizedSparseMatrix (SizedSparseMatrix)
+import SizedSparseMatrix qualified as Matrix
 import Text.Megaparsec hiding (State)
 import Text.Megaparsec.Char (char, newline)
-import UnsizedSparseMatrix (UnsizedSparseMatrix)
-import UnsizedSparseMatrix qualified as Matrix
 
 dayThreeTest :: Text
 dayThreeTest = Encoding.decodeUtf8 $(embedFile "./inputs/day3.test.txt")
@@ -36,56 +37,43 @@ line :: Parser [NumberOrSymbol]
 line = Text.Megaparsec.some numberOrSymbol
 
 foldInternal ::
-  UnsizedSparseMatrix NumberOrSymbol ->
+  SizedSparseMatrix NumberOrSymbol ->
   (Integer, [(Integer, NumberOrSymbol)]) ->
-  UnsizedSparseMatrix NumberOrSymbol
+  SizedSparseMatrix NumberOrSymbol
 foldInternal matrix (x, xs) =
   let folder ::
-        UnsizedSparseMatrix NumberOrSymbol ->
+        SizedSparseMatrix NumberOrSymbol ->
         (Integer, NumberOrSymbol) ->
-        UnsizedSparseMatrix NumberOrSymbol
+        SizedSparseMatrix NumberOrSymbol
       folder acc (y, ns) = Matrix.insert x y ns acc
    in foldl' folder matrix xs
 
 fromZipped ::
+  Integer ->
   [(Integer, [(Integer, NumberOrSymbol)])] ->
-  UnsizedSparseMatrix NumberOrSymbol
-fromZipped = foldl' foldInternal Matrix.empty
+  SizedSparseMatrix NumberOrSymbol
+fromZipped dimension = foldl' foldInternal (Matrix.empty dimension dimension)
 
 -- | Make an assumption that '[[NumberOrSymbol]]' is square...
 toUnsizedSparseMatrix ::
   [[NumberOrSymbol]] ->
-  (Integer, UnsizedSparseMatrix NumberOrSymbol)
+  SizedSparseMatrix NumberOrSymbol
 toUnsizedSparseMatrix matrix =
   let dimension = length matrix
-      unsizedSparseMatrix = fromZipped $ fmap (zip [0 ..]) <$> zip [0 ..] matrix
-   in (toInteger dimension, unsizedSparseMatrix)
+      sizedSparseMatrix =
+        fromZipped (toInteger dimension) $
+          fmap (zip [0 ..]) <$> zip [0 ..] matrix
+   in sizedSparseMatrix
 
-{- | TODO: this could be simplified using 'permutations'. You would create all
-the permutations and then skip the one which is (x, y).
--}
-searchOne :: (a -> Bool) -> Integer -> Integer -> UnsizedSparseMatrix a -> Bool
+searchOne :: (a -> Bool) -> Integer -> Integer -> SizedSparseMatrix a -> Bool
 searchOne f x y mat =
-  let check = maybe False f
-
-      topLeft = check $ Matrix.lookup (x - 1) (y - 1) mat
-      topMiddle = check $ Matrix.lookup x (y - 1) mat
-      topRight = check $ Matrix.lookup (x + 1) (y - 1) mat
-
-      middleLeft = check $ Matrix.lookup (x - 1) y mat
-      middleRight = check $ Matrix.lookup (x + 1) y mat
-
-      bottomLeft = check $ Matrix.lookup (x - 1) (y + 1) mat
-      bottomMiddle = check $ Matrix.lookup x (y + 1) mat
-      bottomRight = check $ Matrix.lookup (x + 1) (y + 1) mat
-   in topLeft
-        || topMiddle
-        || topRight
-        || middleLeft
-        || middleRight
-        || bottomLeft
-        || bottomMiddle
-        || bottomRight
+  let indices = (,) <$> [x - 1 .. x + 1] <*> [y - 1 .. y + 1]
+      check = maybe False f
+      folder acc (xIndex, yIndex) =
+        if xIndex == x && yIndex == y
+          then acc
+          else acc || check (Matrix.lookup xIndex yIndex mat)
+   in foldl' folder False indices
 
 isSymbol :: NumberOrSymbol -> Bool
 isSymbol = \case
@@ -112,7 +100,7 @@ emptyCurrentNumber = CurrentNumber {currentNumber = [], currentNumberHasSymbol =
 searchRow ::
   Integer ->
   Integer ->
-  UnsizedSparseMatrix NumberOrSymbol ->
+  SizedSparseMatrix NumberOrSymbol ->
   State (CurrentNumber, [Integer]) [Integer]
 searchRow dimension row matrix = do
   forM_ [0 .. dimension - 1] $ \column -> do
@@ -161,11 +149,11 @@ partOne input =
   case parse (sepEndBy1 line newline) "..." input of
     Left _ -> error "unable to parse input"
     Right parsed ->
-      let (dimension, unsizedSparseMatrix) = toUnsizedSparseMatrix parsed
+      let sizedSparseMatrix = toUnsizedSparseMatrix parsed
           runSearch :: [Integer] -> Integer -> [Integer]
           runSearch acc row =
-            acc <> evalState (searchRow dimension row unsizedSparseMatrix) (emptyCurrentNumber, [])
-          numbers = foldl' runSearch [] [0 .. dimension - 1]
+            acc <> evalState (searchRow sizedSparseMatrix.yDimension row sizedSparseMatrix) (emptyCurrentNumber, [])
+          numbers = foldl' runSearch [] [0 .. sizedSparseMatrix.xDimension - 1]
        in foldl' (+) 0 numbers
 
 {- | To solve this, we need to extend 'NumberOrSymbol' with 'Gear Integer'
