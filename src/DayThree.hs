@@ -65,15 +65,19 @@ toUnsizedSparseMatrix matrix =
           fmap (zip [0 ..]) <$> zip [0 ..] matrix
    in sizedSparseMatrix
 
-searchOne :: (a -> Bool) -> Integer -> Integer -> SizedSparseMatrix a -> Bool
-searchOne f x y mat =
-  let indices = (,) <$> [x - 1 .. x + 1] <*> [y - 1 .. y + 1]
-      check = maybe False f
-      folder acc (xIndex, yIndex) =
-        if xIndex == x && yIndex == y
-          then acc
-          else acc || check (Matrix.lookup xIndex yIndex mat)
-   in foldl' folder False indices
+newtype Stencil = Stencil {unStencil :: [(Integer, Integer)]}
+  deriving stock (Show, Eq)
+
+-- | Eight node
+haloStencil :: Stencil
+haloStencil = Stencil [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
+
+findWithStencil :: Stencil -> (a -> Bool) -> Integer -> Integer -> SizedSparseMatrix a -> Bool
+findWithStencil stencil f x y mat =
+  let check = maybe False f
+      folder acc (xOffset, yOffset) =
+        acc || check (Matrix.lookup (x + xOffset) (y + yOffset) mat)
+   in foldl' folder False stencil.unStencil
 
 isSymbol :: NumberOrSymbol -> Bool
 isSymbol = \case
@@ -110,7 +114,7 @@ searchRow dimension row matrix = do
       Just (Number x) -> do
         (CurrentNumber {..}, numbers) <- get
         let nextWithSymbol =
-              if currentNumberHasSymbol == WithSymbol || searchOne isSymbol row column matrix
+              if currentNumberHasSymbol == WithSymbol || findWithStencil haloStencil isSymbol row column matrix
                 then WithSymbol
                 else WithoutSymbol
         if column == dimension - 1
@@ -155,6 +159,32 @@ partOne input =
             acc <> evalState (searchRow sizedSparseMatrix.yDimension row sizedSparseMatrix) (emptyCurrentNumber, [])
           numbers = foldl' runSearch [] [0 .. sizedSparseMatrix.xDimension - 1]
        in foldl' (+) 0 numbers
+
+data PartNumberOrGear
+  = PartNumber Integer
+  | Gear Integer
+  | Neither
+  deriving stock (Show, Eq)
+
+labelGears ::
+  SizedSparseMatrix NumberOrSymbol ->
+  State Integer (SizedSparseMatrix PartNumberOrGear)
+labelGears Matrix.SizedSparseMatrix {..} = do
+  let toPartNumberOrGear :: NumberOrSymbol -> State Integer PartNumberOrGear
+      toPartNumberOrGear = \case
+        Number x -> pure $ PartNumber x
+        Symbol '*' -> do
+          gearNumber <- get
+          modify (+ 1)
+          pure $ Gear gearNumber
+        Symbol _ -> pure Neither
+        Period -> pure Neither
+  nextSizedSparseMatrix <- traverse toPartNumberOrGear sizedSparseMatrix
+  pure $
+    Matrix.SizedSparseMatrix
+      { sizedSparseMatrix = nextSizedSparseMatrix
+      , ..
+      }
 
 {- | To solve this, we need to extend 'NumberOrSymbol' with 'Gear Integer'
 where each 'Gear' is the symbol '*' with a monotonically increasing number.
