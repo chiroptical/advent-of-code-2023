@@ -10,7 +10,7 @@ data SizedSparseMatrix a = SizedSparseMatrix
   , yDimension :: Integer
   , sizedSparseMatrix :: Map (Integer, Integer) a
   }
-  deriving stock (Show)
+  deriving stock (Eq, Show)
 
 key :: Integer -> Integer -> (Integer, Integer)
 key = (,)
@@ -29,16 +29,18 @@ lookup x y SizedSparseMatrix {..} = Map.lookup (x, y) sizedSparseMatrix
 
 -- | TODO: Need to test this
 fromList :: [((Integer, Integer), a)] -> SizedSparseMatrix a
-fromList input =
-  let compareX ((x1, _), _) ((x2, _), _) = compare x1 x2
-      compareY ((_, y1), _) ((_, y2), _) = compare y1 y2
-      ((maxX, _), _) = maximumBy compareX input
-      ((_, maxY), _) = maximumBy compareY input
-   in SizedSparseMatrix
-        { xDimension = maxX
-        , yDimension = maxY
-        , sizedSparseMatrix = Map.fromList input
-        }
+fromList = \case
+  [] -> empty 0 0
+  input ->
+    let compareX ((x1, _), _) ((x2, _), _) = compare x1 x2
+        compareY ((_, y1), _) ((_, y2), _) = compare y1 y2
+        ((maxX, _), _) = maximumBy compareX input
+        ((_, maxY), _) = maximumBy compareY input
+     in SizedSparseMatrix
+          { xDimension = maxX
+          , yDimension = maxY
+          , sizedSparseMatrix = Map.fromList input
+          }
 
 insert :: Integer -> Integer -> a -> SizedSparseMatrix a -> SizedSparseMatrix a
 insert x y a SizedSparseMatrix {..} =

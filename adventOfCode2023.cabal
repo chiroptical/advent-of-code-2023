@@ -72,6 +72,7 @@ test-suite adventOfCode2023-test
   other-modules:
       DayOneSpec
       DayThreeSpec
+      SizedSparseMatrixSpec
       Paths_adventOfCode2023
   hs-source-dirs:
       test

@@ -5,6 +5,9 @@ import Test.Hspec
 
 spec :: Spec
 spec = do
+  let isPeriod = \case
+        Period -> True
+        _ -> False
   describe "toNumber" $ do
     it "works" $ do
       toNumber [4, 6, 7] `shouldBe` 467
@@ -19,9 +22,6 @@ spec = do
             [ (0, [(0, Symbol '_'), (1, Period)])
             , (1, [(0, Period), (1, Period)])
             ]
-        isPeriod = \case
-          Period -> True
-          _ -> False
     it "finds a period next to the symbol at 0, 0" $ do
       findWithStencil haloStencil isPeriod 0 0 sizedSparseMatrix `shouldBe` True
     it "can't find a symbol next to the symbol at 0, 0" $ do
@@ -30,16 +30,3 @@ spec = do
       findWithStencil haloStencil isPeriod 0 1 sizedSparseMatrix `shouldBe` True
     it "can find a symbol next to the period at 0, 1" $ do
       findWithStencil haloStencil isSymbol 0 1 sizedSparseMatrix `shouldBe` True
-  describe "findWithStencil" $ do
-    let input =
-          fromZipped
-            2
-            [ (0, [(0, Symbol '*'), (1, Period)])
-            , (1, [(0, Symbol '*'), (1, Period)])
-            ]
-        output =
-          Map.fromList
-            2
-            [ (0, [(0, Symbol '*'), (1, Period)])
-            , (1, [(0, Symbol '*'), (1, Period)])
-            ]
