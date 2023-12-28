@@ -55,10 +55,10 @@ fromZipped ::
 fromZipped dimension = foldl' foldInternal (Matrix.empty dimension dimension)
 
 -- | Make an assumption that '[[NumberOrSymbol]]' is square...
-toUnsizedSparseMatrix ::
+toSizedSparseMatrix ::
   [[NumberOrSymbol]] ->
   SizedSparseMatrix NumberOrSymbol
-toUnsizedSparseMatrix matrix =
+toSizedSparseMatrix matrix =
   let dimension = length matrix
       sizedSparseMatrix =
         fromZipped (toInteger dimension) $
@@ -153,7 +153,7 @@ partOne input =
   case parse (sepEndBy1 line newline) "..." input of
     Left _ -> error "unable to parse input"
     Right parsed ->
-      let sizedSparseMatrix = toUnsizedSparseMatrix parsed
+      let sizedSparseMatrix = toSizedSparseMatrix parsed
           runSearch :: [Integer] -> Integer -> [Integer]
           runSearch acc row =
             acc <> evalState (searchRow sizedSparseMatrix.yDimension row sizedSparseMatrix) (emptyCurrentNumber, [])
@@ -194,11 +194,13 @@ Instead of collecting all the numbers, we need to collect numbers next to
 numbers which are attached to exactly 2 gears and multiply the numbers
 together. Finally, we sum all of the gear ratios
 -}
-partTwo :: Text -> [[NumberOrSymbol]]
+partTwo :: Text -> SizedSparseMatrix PartNumberOrGear
 partTwo input =
   case parse (sepEndBy1 line newline) "..." input of
     Left _ -> error "unable to parse input"
-    Right parsed -> parsed
+    Right parsed ->
+      let gears = evalState (labelGears $ toSizedSparseMatrix parsed) 1
+       in gears
 
 main :: IO ()
 main = do
@@ -207,3 +209,4 @@ main = do
   print $ partOne dayThree
 
   print ("Part 2" :: Text)
+  print $ partTwo dayThreeTest
