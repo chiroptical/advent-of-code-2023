@@ -6,6 +6,8 @@ module DayThree where
 import Control.Monad.Trans.State
 import Data.FileEmbed (embedFile)
 import Data.Foldable
+import Data.Map.Strict (Map)
+import Data.Map.Strict qualified as Map
 import Data.Text (Text)
 import Data.Text.Encoding qualified as Encoding
 import Parsing
@@ -78,6 +80,16 @@ findWithStencil stencil f x y mat =
       folder acc (xOffset, yOffset) =
         acc || check (Matrix.lookup (x + xOffset) (y + yOffset) mat)
    in foldl' folder False stencil.unStencil
+
+collectFromStencilWith :: Stencil -> (a -> Maybe b) -> Integer -> Integer -> SizedSparseMatrix a -> [b]
+collectFromStencilWith stencil f x y mat =
+  let folder acc (xOffset, yOffset) =
+        case Matrix.lookup (x + xOffset) (y + yOffset) mat of
+          Nothing -> acc
+          Just a -> case f a of
+            Nothing -> acc
+            Just b -> acc <^> b
+   in foldl' folder [] stencil.unStencil
 
 isSymbol :: NumberOrSymbol -> Bool
 isSymbol = \case
@@ -201,6 +213,68 @@ partTwo input =
     Right parsed ->
       let gears = evalState (labelGears $ toSizedSparseMatrix parsed) 1
        in gears
+
+data CurrentPartNumber = CurrentPartNumber
+  { currentPartNumber :: [Integer]
+  , currentAdjacentGears :: [Integer]
+  }
+
+emptyCurrentPartNumber :: CurrentPartNumber
+emptyCurrentPartNumber = CurrentPartNumber {currentPartNumber = [], currentAdjacentGears = []}
+
+newtype GearData = GearData {unGearData :: Map Integer [Integer]}
+
+getGearNumber :: PartNumberOrGear -> Maybe Integer
+getGearNumber = \case
+  Gear x -> Just x
+  _ -> Nothing
+
+searchRowPartTwo ::
+  Integer ->
+  Integer ->
+  SizedSparseMatrix PartNumberOrGear ->
+  State (CurrentPartNumber, GearData) GearData
+searchRowPartTwo dimension row matrix = do
+  forM_ [0 .. dimension - 1] $ \column -> do
+    case Matrix.lookup row column matrix of
+      Nothing -> error "this shouldn't happen"
+      Just (PartNumber x) -> do
+        (currentPartNumber, gearMap) <- get
+        let adjacentGears = collectFromStencilWith haloStencil getGearNumber row column matrix
+        if column == dimension - 1
+          then case currentPartNumber.currentAdjacentGears of
+            [] -> put (emptyCurrentPartNumber, gearMap)
+            gears ->
+              put
+                ( emptyCurrentPartNumber
+                , foldl'
+                    ( \gearData gear ->
+                        GearData $
+                          Map.insertWith
+                            (<>)
+                            gear
+                            [toNumber (currentPartNumber.currentPartNumber <^> x)]
+                            gearData.unGearData
+                    )
+                    gearMap
+                    gears
+                )
+          else
+            put
+              ( CurrentPartNumber
+                  { currentPartNumber = currentPartNumber.currentPartNumber <^> x
+                  , currentAdjacentGears =
+                      currentPartNumber.currentAdjacentGears <> adjacentGears
+                  }
+              , gearMap
+              )
+      Just (Gear _x) ->
+        -- Collect the part number and insert it to the gear reset state
+        error "TODO"
+      Just Neither ->
+        -- Collect the part number and reset state
+        error "TODO"
+  snd <$> get
 
 main :: IO ()
 main = do
